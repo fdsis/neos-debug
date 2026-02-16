@@ -6,9 +6,11 @@ import iconBoltLightning from './icons/bolt-lightning-solid.svg';
 import iconXMark from './icons/circle-xmark-regular.svg';
 import iconNeos from './icons/neos.svg';
 import iconWarning from './icons/triangle-exclamation-solid.svg';
+import iconBolt from './icons/bolt-solid.svg';
 import iconToggleOff from './icons/toggle-off-solid.svg';
 import iconToggleOn from './icons/toggle-on-solid.svg';
 import iconInfo from './icons/circle-info-solid.svg';
+import iconDownload from './icons/download-solid.svg';
 
 type ICON_SIZE = 'S' | 'M' | 'L' | 'XL';
 
@@ -35,8 +37,10 @@ export {
     iconXMark,
     iconNeos,
     iconWarning,
+    iconBolt,
     iconToggleOn,
     iconToggleOff,
     iconInfo,
+    iconDownload,
     Icon,
 };

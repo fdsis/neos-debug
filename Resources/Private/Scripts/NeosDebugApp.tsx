@@ -5,6 +5,7 @@ import QueryOverlay from './features/sql/QueryOverlay';
 import CacheOverlay from './features/cache/CacheOverlay';
 import InspectionOverlay from './features/inspection/InspectionOverlay';
 import AdditionalMetricsOverlay from './features/additionalMetrics/AdditionalMetricsOverlay';
+import FusionTimingOverlay from './features/fusionTiming/FusionTimingOverlay';
 import { DebugProvider } from './context/DebugContext';
 import { css, styleContainer } from './styles/css';
 import prettyDate from './helper/prettyDate';
@@ -173,6 +174,7 @@ class NeosDebugApp extends Component<AppProps, AppState> {
                     <CacheOverlay />
                     <InspectionOverlay />
                     <AdditionalMetricsOverlay />
+                    <FusionTimingOverlay />
                 </div>
             </DebugProvider>
         );

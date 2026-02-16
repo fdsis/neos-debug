@@ -53,6 +53,23 @@ type SlowQuery = {
     types: number[];
 }
 
+type FusionPathTiming = {
+    fusionPath: string
+    count: number
+    totalTime: number
+    maxTime: number
+    avgTime: number
+    totalSqlQueries: number
+}
+
+type FusionTraceEvent = {
+    name: string
+    startTime: number
+    duration: number
+    depth: number
+    sqlQueries: number
+}
+
 type DebugInfos = {
     renderTime: number;
     startRenderAt: number;
@@ -77,6 +94,8 @@ type DebugInfos = {
     // TODO: Create type for cache misses
     cCacheMisses: string[];
     cCacheUncached: number;
+    fusionPathTimings: FusionPathTiming[]
+    fusionTraceEvents: FusionTraceEvent[]
     // TODO: Define type for collected data
     additionalMetrics: {
         messages: {
@@ -103,4 +122,4 @@ type NeosResource = {
     collectionName: string;
 };
 
-type Overlays = 'cache' | 'query' | 'inspection' | 'additionalMetrics';
+type Overlays = 'cache' | 'query' | 'inspection' | 'additionalMetrics' | 'fusionTiming';

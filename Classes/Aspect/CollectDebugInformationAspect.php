@@ -21,6 +21,7 @@ use Flowpack\Neos\Debug\DataCollector\MessagesCollector;
 use Flowpack\Neos\Debug\Domain\Model\Dto\ResourceStreamRequest;
 use Flowpack\Neos\Debug\Logging\DebugStack;
 use Flowpack\Neos\Debug\Service\DebugService;
+use Flowpack\Neos\Debug\Service\FusionPathTimingCollector;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Utils;
 use Neos\Flow\Annotations as Flow;
@@ -69,6 +70,9 @@ class CollectDebugInformationAspect
     #[Flow\Inject()]
     protected ContentContextMetricsCollectorInterface $contentContextMetricsCollector;
 
+    #[Flow\Inject]
+    protected FusionPathTimingCollector $fusionPathTimingCollector;
+
     #[Flow\Pointcut("setting(Flowpack.Neos.Debug.enabled)")]
     public function debuggingActive(): void
     {
@@ -89,6 +93,7 @@ class CollectDebugInformationAspect
     protected function addDebugValues(JoinPointInterface $joinPoint): string|ResponseInterface|StreamInterface
     {
         $startRenderAt = microtime(true) * 1000;
+
         $response = $joinPoint->getAdviceChain()->proceed($joinPoint);
         $endRenderAt = microtime(true) * 1000;
 
@@ -141,6 +146,8 @@ class CollectDebugInformationAspect
             // Init as 0 as the actual number has to be resolved from the individual cache entries
             'resourceStreamRequests' => $this->resourceStreamRequests,
             'thumbnails' => $this->thumbnails,
+            'fusionPathTimings' => $this->fusionPathTimingCollector->getTimings(),
+            'fusionTraceEvents' => $this->fusionPathTimingCollector->getTraceEvents(),
             'additionalMetrics' => [
                 // TODO: Iterate over all existing collectors
                 $this->messagesCollector->getName() => $this->messagesCollector->collect(),

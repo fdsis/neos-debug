@@ -10,6 +10,7 @@ import {
     iconMagnifyingGlass,
     iconDatabase,
     iconBoltLightning,
+    iconBolt,
 } from '../presentationals/Icon';
 import { overlayState } from '../presentationals/Overlay';
 import { useCallback } from 'preact/hooks';
@@ -70,7 +71,7 @@ const styles = css`
 
 const StatusBar: FunctionComponent = () => {
     const {
-        debugInfos: { renderTime, sqlData, cCacheHits, cCacheMisses, cCacheUncached },
+        debugInfos: { renderTime, sqlData, cCacheHits, cCacheMisses, cCacheUncached, fusionPathTimings },
         closeApp,
     } = useDebugContext();
 
@@ -91,6 +92,9 @@ const StatusBar: FunctionComponent = () => {
             <button onClick={() => toggleOverlay('cache')}>
                 <Icon icon={iconBoltLightning} /> Cache (hits: {cCacheHits}, misses: {cCacheMisses.length}, uncached{' '}
                 {cCacheUncached})
+            </button>
+            <button onClick={() => toggleOverlay('fusionTiming')}>
+                <Icon icon={iconBolt} /> Timing ({(fusionPathTimings || []).length} paths)
             </button>
             <button onClick={() => toggleOverlay('additionalMetrics')}>
                 <Icon icon={iconWarning} /> Additional metrics

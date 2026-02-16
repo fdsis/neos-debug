@@ -14,6 +14,7 @@ namespace Flowpack\Neos\Debug\Aspect;
  * source code.
  */
 
+use Flowpack\Neos\Debug\Service\FusionPathTimingCollector;
 use Flowpack\Neos\Debug\Service\RenderTimer;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Aop\JoinPointInterface;
@@ -27,6 +28,9 @@ class RuntimeTracingAspect
     #[Flow\Inject]
     protected RenderTimer $renderTimer;
 
+    #[Flow\Inject]
+    protected FusionPathTimingCollector $fusionPathTimingCollector;
+
     #[Flow\Pointcut("setting(Flowpack.Neos.Debug.enabled)")]
     public function debuggingActive(): void
     {
@@ -35,8 +39,10 @@ class RuntimeTracingAspect
     #[Flow\Before("method(Neos\Fusion\Core\Cache\RuntimeContentCache->enter()) && Flowpack\Neos\Debug\Aspect\RuntimeTracingAspect->debuggingActive")]
     public function onEnter(JoinPointInterface $joinPoint): void
     {
-        $configuration = $joinPoint->getMethodArgument('configuration');
         $fusionPath = $joinPoint->getMethodArgument('fusionPath');
+        $configuration = $joinPoint->getMethodArgument('configuration');
+
+        $this->fusionPathTimingCollector->start($fusionPath);
 
         $cacheMode = $configuration['mode'] ?? null;
 
@@ -45,5 +51,16 @@ class RuntimeTracingAspect
         }
 
         $this->renderTimer->start($fusionPath);
+    }
+
+    #[Flow\After("method(Neos\Fusion\Core\Cache\RuntimeContentCache->leave()) && Flowpack\Neos\Debug\Aspect\RuntimeTracingAspect->debuggingActive")]
+    public function onLeave(JoinPointInterface $joinPoint): void
+    {
+        $evaluateContext = $joinPoint->getMethodArgument('evaluateContext');
+        $fusionPath = $evaluateContext['fusionPath'] ?? null;
+
+        if ($fusionPath !== null) {
+            $this->fusionPathTimingCollector->stop($fusionPath);
+        }
     }
 }
