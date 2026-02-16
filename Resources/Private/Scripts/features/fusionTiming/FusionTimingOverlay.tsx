@@ -97,14 +97,18 @@ const FusionTimingOverlay = () => {
         if (!events.length) return
 
         const traceEvents = events.map((event) => ({
-            name: event.name,
-            cat: 'fusion',
+            name: event.fusionObjectType
+                ? `${event.fusionObjectType} (${event.name.split('/').pop()})`
+                : event.name,
+            cat: event.fusionObjectType || 'fusion',
             ph: 'X',
             ts: event.startTime * 1000,
             dur: event.duration * 1000,
             pid: 1,
             tid: event.depth,
             args: {
+                fusionPath: event.name,
+                fusionObjectType: event.fusionObjectType,
                 sqlQueries: event.sqlQueries,
             },
         }))

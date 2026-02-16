@@ -64,6 +64,7 @@ type FusionPathTiming = {
 
 type FusionTraceEvent = {
     name: string
+    fusionObjectType: string | null
     startTime: number
     duration: number
     depth: number

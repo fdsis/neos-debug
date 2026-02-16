@@ -18,6 +18,7 @@ use Flowpack\Neos\Debug\Service\FusionPathTimingCollector;
 use Flowpack\Neos\Debug\Service\RenderTimer;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Aop\JoinPointInterface;
+use Neos\Utility\ObjectAccess;
 
 /**
  * @Flow\Aspect
@@ -42,7 +43,8 @@ class RuntimeTracingAspect
         $fusionPath = $joinPoint->getMethodArgument('fusionPath');
         $configuration = $joinPoint->getMethodArgument('configuration');
 
-        $this->fusionPathTimingCollector->start($fusionPath);
+        $fusionObjectType = $this->resolveFusionObjectType($joinPoint, $fusionPath);
+        $this->fusionPathTimingCollector->start($fusionPath, $fusionObjectType);
 
         $cacheMode = $configuration['mode'] ?? null;
 
@@ -51,6 +53,19 @@ class RuntimeTracingAspect
         }
 
         $this->renderTimer->start($fusionPath);
+    }
+
+    protected function resolveFusionObjectType(JoinPointInterface $joinPoint, string $fusionPath): ?string
+    {
+        try {
+            $runtimeContentCache = $joinPoint->getProxy();
+            $runtime = ObjectAccess::getProperty($runtimeContentCache, 'runtime', true);
+            $runtimeConfiguration = ObjectAccess::getProperty($runtime, 'runtimeConfiguration', true);
+            $fusionConfiguration = $runtimeConfiguration->forPath($fusionPath);
+            return $fusionConfiguration['__objectType'] ?? null;
+        } catch (\Exception) {
+            return null;
+        }
     }
 
     #[Flow\After("method(Neos\Fusion\Core\Cache\RuntimeContentCache->leave()) && Flowpack\Neos\Debug\Aspect\RuntimeTracingAspect->debuggingActive")]

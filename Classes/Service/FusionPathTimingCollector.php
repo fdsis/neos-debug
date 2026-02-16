@@ -26,14 +26,15 @@ class FusionPathTimingCollector
     protected array $timings = [];
 
     /**
-     * @var array<int, array{name: string, startTime: float, duration: float, depth: int, sqlQueries: int}>
+     * @var array<int, array{name: string, startTime: float, duration: float, depth: int, sqlQueries: int, fusionObjectType: string|null}>
      */
     protected array $traceEvents = [];
 
-    public function start(string $fusionPath): void
+    public function start(string $fusionPath, ?string $fusionObjectType = null): void
     {
         $this->stack[] = [
             'fusionPath' => $fusionPath,
+            'fusionObjectType' => $fusionObjectType,
             'startTime' => microtime(true) * 1000,
             'startSqlCount' => $this->getCurrentSqlQueryCount(),
         ];
@@ -62,6 +63,7 @@ class FusionPathTimingCollector
 
         $this->traceEvents[] = [
             'name' => $fusionPath,
+            'fusionObjectType' => $entry['fusionObjectType'],
             'startTime' => $entry['startTime'],
             'duration' => $renderTime,
             'depth' => count($this->stack),
@@ -78,7 +80,7 @@ class FusionPathTimingCollector
     }
 
     /**
-     * @return array<int, array{name: string, startTime: float, duration: float, depth: int, sqlQueries: int}>
+     * @return array<int, array{name: string, startTime: float, duration: float, depth: int, sqlQueries: int, fusionObjectType: string|null}>
      */
     public function getTraceEvents(): array
     {
