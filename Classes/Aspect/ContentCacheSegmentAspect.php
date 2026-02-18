@@ -31,6 +31,9 @@ class ContentCacheSegmentAspect
     public const MODE_UNCACHED = 'uncached';
     public const MODE_DYNAMIC = 'dynamic';
 
+    #[Flow\InjectConfiguration("ignore.fusionPrototypes")]
+    protected ?array $ignoreFusionPrototypes = [];
+
     protected array $interceptedCacheEntryValues = [];
 
     protected string $cacheSegmentTail;
@@ -169,6 +172,11 @@ class ContentCacheSegmentAspect
         } catch (PropertyNotAccessibleException) {
             return $segment;
         }
+
+        if (\in_array($fusionObjectName, $this->ignoreFusionPrototypes ?? [])) {
+            return $segment;
+        }
+
 
         $injectPosition = 2;
         $info = array_slice($info, 0, $injectPosition, true)
