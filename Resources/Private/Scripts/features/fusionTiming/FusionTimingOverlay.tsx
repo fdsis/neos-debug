@@ -75,7 +75,7 @@ const pathCellStyle = css`
 const FusionTimingOverlay = () => {
     const visible = useComputed(() => overlayState.value === 'fusionTiming')
     const {
-        debugInfos: { fusionPathTimings, fusionTraceEvents },
+        debugInfos: { fusionPathTimings, fusionTraceEvents, renderTime },
     } = useDebugContext()
 
     const filter = useSignal('')
@@ -138,7 +138,7 @@ const FusionTimingOverlay = () => {
             return sortDirection.value === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number)
         })
 
-    const totalTime = timings.reduce((sum, t) => sum + t.totalTime, 0)
+    const totalTime = renderTime ?? 0
 
     const sortIndicator = (key: SortKey) => (sortKey.value === key ? (sortDirection.value === 'desc' ? ' \u25BC' : ' \u25B2') : '')
 
