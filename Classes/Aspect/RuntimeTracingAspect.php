@@ -78,4 +78,16 @@ class RuntimeTracingAspect
             $this->fusionPathTimingCollector->stop($fusionPath);
         }
     }
+
+    #[Flow\Around("method(Neos\Fusion\Core\Runtime->evaluateEelExpression()) && Flowpack\Neos\Debug\Aspect\RuntimeTracingAspect->debuggingActive")]
+    public function onEelExpression(JoinPointInterface $joinPoint): mixed
+    {
+        $expression = $joinPoint->getMethodArgument('expression');
+        $this->fusionPathTimingCollector->startEel($expression);
+        try {
+            return $joinPoint->getAdviceChain()->proceed($joinPoint);
+        } finally {
+            $this->fusionPathTimingCollector->stopEel($expression);
+        }
+    }
 }

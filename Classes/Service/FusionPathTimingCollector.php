@@ -21,6 +21,11 @@ class FusionPathTimingCollector
     protected array $stack = [];
 
     /**
+     * @var array<int, array{expression: string, startTime: float, startSqlCount: int}>
+     */
+    protected array $eelStack = [];
+
+    /**
      * @var array<string, FusionPathTiming>
      */
     protected array $timings = [];
@@ -71,6 +76,37 @@ class FusionPathTimingCollector
         ];
     }
 
+    public function startEel(string $expression): void
+    {
+        $this->eelStack[] = [
+            'expression' => $expression,
+            'startTime' => microtime(true) * 1000,
+            'startSqlCount' => $this->getCurrentSqlQueryCount(),
+        ];
+    }
+
+    public function stopEel(string $expression): void
+    {
+        if (empty($this->eelStack)) {
+            return;
+        }
+
+        $entry = array_pop($this->eelStack);
+        $duration = (microtime(true) * 1000) - $entry['startTime'];
+        $sqlQueryCount = $this->getCurrentSqlQueryCount() - $entry['startSqlCount'];
+        $currentFusionPath = !empty($this->stack) ? end($this->stack)['fusionPath'] : '';
+
+        $this->traceEvents[] = [
+            'name' => $currentFusionPath,
+            'fusionObjectType' => 'EEL',
+            'eel' => $expression,
+            'startTime' => $entry['startTime'],
+            'duration' => $duration,
+            'depth' => count($this->stack),
+            'sqlQueries' => $sqlQueryCount,
+        ];
+    }
+
     /**
      * @return FusionPathTiming[]
      */
@@ -80,7 +116,7 @@ class FusionPathTimingCollector
     }
 
     /**
-     * @return array<int, array{name: string, startTime: float, duration: float, depth: int, sqlQueries: int, fusionObjectType: string|null}>
+     * @return array<int, array{name: string, startTime: float, duration: float, depth: int, sqlQueries: int, fusionObjectType: string|null, eel?: string}>
      */
     public function getTraceEvents(): array
     {

@@ -96,22 +96,32 @@ const FusionTimingOverlay = () => {
         const events = fusionTraceEvents || []
         if (!events.length) return
 
-        const traceEvents = events.map((event) => ({
-            name: event.fusionObjectType
-                ? `${event.fusionObjectType} (${event.name.split('/').pop()})`
-                : event.name,
-            cat: event.fusionObjectType || 'fusion',
-            ph: 'X',
-            ts: event.startTime * 1000,
-            dur: event.duration * 1000,
-            pid: 1,
-            tid: event.depth,
-            args: {
-                fusionPath: event.name,
-                fusionObjectType: event.fusionObjectType,
-                sqlQueries: event.sqlQueries,
-            },
-        }))
+        const traceEvents = [
+            { ph: 'M', pid: 1, tid: 0, name: 'process_name', args: { name: 'Fusion' } },
+            { ph: 'M', pid: 2, tid: 0, name: 'process_name', args: { name: 'EEL' } },
+            ...events.map((event) => {
+                const isEel = event.fusionObjectType === 'EEL'
+                return {
+                    name: isEel
+                        ? event.name
+                        : event.fusionObjectType
+                          ? `${event.fusionObjectType} (${event.name.split('/').pop()})`
+                          : event.name,
+                    cat: event.fusionObjectType || 'fusion',
+                    ph: 'X',
+                    ts: event.startTime * 1000,
+                    dur: event.duration * 1000,
+                    pid: isEel ? 2 : 1,
+                    tid: event.depth,
+                    args: {
+                        fusionPath: event.name,
+                        fusionObjectType: event.fusionObjectType,
+                        sqlQueries: event.sqlQueries,
+                        ...(isEel && { eel: event.eel }),
+                    },
+                }
+            }),
+        ]
 
         const blob = new Blob([JSON.stringify({ traceEvents })], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
