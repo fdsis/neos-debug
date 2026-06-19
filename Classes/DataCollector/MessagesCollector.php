@@ -26,7 +26,7 @@ class MessagesCollector extends AbstractDataCollector
         return 'messages';
     }
 
-    public function addMessage(string $message, string $title = null): void
+    public function addMessage(string $message, ?string $title = null): void
     {
         $this->messages[] = new Message($message, $title);
     }
